@@ -1,0 +1,26 @@
+name: Test Deploy to smart-html/test-deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout this repo
+      uses: actions/checkout@v3
+
+    - name: Create dummy output folder
+      run: |
+        mkdir -p output
+        echo "Hello from smart-test at $(date)" > output/index.html
+
+    - name: Deploy to smart-html/test-deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        personal_token: ${{ secrets.GH_PAT }}
+        external_repository: WorldHealthOrganization/smart-html
+        publish_branch: gh-pages
+        publish_dir: ./output
+        destination_dir: test-deploy
