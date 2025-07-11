@@ -4,23 +4,32 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build-and-commit:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout this repo
-      uses: actions/checkout@v3
+      - name: Checkout this repo
+        uses: actions/checkout@v3
 
-    - name: Create dummy output folder
-      run: |
-        mkdir -p output
-        echo "Hello from smart-test at $(date)" > output/index.html
+      - name: Create dummy output folder
+        run: |
+          mkdir -p output
+          echo "Hello from smart-test at $(date)" > output/index.html
 
-    - name: Deploy to smart-html/test-deploy
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        personal_token: ${{ secrets.GH_PAT }}
-        external_repository: WorldHealthOrganization/smart-html
-        publish_branch: gh-pages
-        publish_dir: ./output
-        destination_dir: test-deploy
+      - name: Clone smart-html main branch
+        run: |
+          git clone --single-branch --branch main https://x-access-token:${{ secrets.GH_PAT }}@github.com/WorldHealthOrganization/smart-html.git target-repo
+
+      - name: Copy to test-deploy folder
+        run: |
+          mkdir -p target-repo/test-deploy
+          cp -r output/* target-repo/test-deploy/
+
+      - name: Commit and push to smart-html/main
+        run: |
+          cd target-repo
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add test-deploy
+          git commit -m "Deploy test content to test-deploy from ${{ github.repository }}"
+          git push
